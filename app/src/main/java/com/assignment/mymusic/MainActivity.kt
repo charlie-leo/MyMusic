@@ -3,10 +3,7 @@ package com.assignment.mymusic
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.activity.viewModels
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,19 +11,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.assignment.mymusic.ui.theme.MyMusicTheme
 
 class MainActivity : ComponentActivity() {
+
+
+    val musicViewModel by viewModels<MusicViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+//        enableEdgeToEdge()
+
         setContent {
             MyMusicTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+               MusicListScreen(musicViewModel)
             }
         }
+
+        musicViewModel.setContentResolver(contentResolver)
+
+
     }
 }
 
