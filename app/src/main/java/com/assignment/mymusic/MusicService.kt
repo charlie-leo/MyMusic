@@ -40,6 +40,7 @@ class MusicService : Service() {
 
     val playerStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d("TAG", " playerStateReceiver onReceive: ")
             intent?.let {
                 val playerState = it.getParcelableExtra<PlayerState>("player")
                 playerState?.let {
@@ -54,6 +55,7 @@ class MusicService : Service() {
         override fun onReceive(context: Context?, intent: Intent?) {
             intent?.let {
                 val value = it.getFloatExtra("slider_value", 0f)
+                Log.d("TAG", "sliderChange onReceive: Slider Value ${value}")
                 updateDuration(value)
             }
 
@@ -67,14 +69,10 @@ class MusicService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
+        startNotification()
 
         registerReceiver(playerStateReceiver, IntentFilter(Utils.PLAYER_STATE_CHANNEL))
         registerReceiver(sliderChange, IntentFilter(Utils.SLIDER_CHANNEL))
-
-        mediaPlayer.setOnSeekCompleteListener {
-//            val dur = it.
-//            sendBroadcast()
-        }
 
         return START_STICKY
     }
@@ -83,7 +81,6 @@ class MusicService : Service() {
         scope.launch {
             when (action.actionType) {
                 PlayerAction.START -> {
-                    startNotification()
                     changeMediaSource(action.music)
                 }
 
@@ -91,8 +88,19 @@ class MusicService : Service() {
                 PlayerAction.PLAY -> {
                     if (mediaPlayer.isPlaying) {
                         mediaPlayer.pause()
+                        sendBroadcast(Intent(Utils.PROGRESS_CHANNEL).apply {
+
+                            putExtra("action", "PAUSE")
+                            putExtra("currentPosition", mediaPlayer.currentPosition.toLong())
+                            putExtra("duration", mediaPlayer.duration.toLong())
+                        })
                     } else {
                         mediaPlayer.start()
+                        sendBroadcast(Intent(Utils.PROGRESS_CHANNEL).apply {
+                            putExtra("action", "PLAY")
+                            putExtra("currentPosition", mediaPlayer.currentPosition.toLong())
+                            putExtra("duration", mediaPlayer.duration.toLong())
+                        })
                     }
                 }
 
@@ -112,6 +120,7 @@ class MusicService : Service() {
             }
             mediaPlayer.reset()
             mediaPlayer.setDataSource(mus.filePAth)
+            mediaPlayer.isLooping = false
             mediaPlayer.setOnPreparedListener {
                 mediaPlayer.start()
             }

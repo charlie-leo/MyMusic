@@ -6,5 +6,6 @@ package com.assignment.mymusic
  * @author Charles Raj
  */
 data class MusicState(
-    var sliderState : Float = 0f
+    var sliderState : Float = 0f,
+    val isPlaying : Boolean = true
 )

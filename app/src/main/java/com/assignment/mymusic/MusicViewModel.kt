@@ -15,6 +15,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.parcelize.Parcelize
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToLong
@@ -41,11 +43,31 @@ class MusicViewModel : ViewModel() {
     private val _playerState = MutableStateFlow(PlayerState())
     val playerState: StateFlow<PlayerState> = _playerState
 
-//    private var musicService: MusicService? = null
     private var stopCounter = false
+    private val mutex = Mutex()
+
+    private var trial = 0
 
     val progressReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d("TAG", " progressReceiver onReceive: ")
+            intent?.let{ inte ->
+                val action = inte.getStringExtra("action")
+                if (action.equals( "PLAY")){
+                    _musicState.value = _musicState.value.copy(
+                        isPlaying = true
+                    )
+                    val duration = inte.getLongExtra("duration", 0)
+                    Log.d("TAG", "progressReceiver onReceive: Slider Value ${duration}")
+                    stopCounter = true
+                    processCounter(duration)
+                } else if (action.equals( "PAUSE")){
+                    _musicState.value = _musicState.value.copy(
+                        isPlaying = false
+                    )
+                    stopCounter = true
+                }
+            }
         }
     }
 
@@ -55,6 +77,8 @@ class MusicViewModel : ViewModel() {
                 _musicState.value = _musicState.value.copy(
                     sliderState = event.value
                 )
+                stopCounter = true
+                processCounter(_playerState.value.music?.duration)
             }
         }
     }
@@ -124,6 +148,7 @@ class MusicViewModel : ViewModel() {
                 _musicState.value = _musicState.value.copy(
                     sliderState = 0f
                 )
+                stopCounter = true
                 processCounter(musicFile?.duration)
             }
             PlayerAction.PLAY -> {
@@ -156,6 +181,7 @@ class MusicViewModel : ViewModel() {
                 _musicState.value = _musicState.value.copy(
                     sliderState = 0f
                 )
+                stopCounter = true
                 processCounter(musicFile?.duration)
             }
 
@@ -182,26 +208,49 @@ class MusicViewModel : ViewModel() {
 
     private fun processCounter(duration: Long?) {
         viewModelScope.launch {
-            val sec = TimeUnit.MILLISECONDS.toSeconds(duration ?: 0)
-            val ranSec = TimeUnit.MILLISECONDS.toSeconds(_musicState.value.sliderState.roundToLong())
-            val repeatCount = sec - ranSec
+            mutex.withLock {
+                val sec = TimeUnit.MILLISECONDS.toSeconds(_playerState.value.music?.duration ?: 0)
+                val ranSec = TimeUnit.MILLISECONDS.toSeconds(_musicState.value.sliderState.roundToLong())
+                val repeatCount = sec - ranSec
+                Log.d("TAG", "getPlayerData: Duration  ${_playerState.value.music?.duration}")
+                Log.d("TAG", "getPlayerData: SEC  ${sec}")
+                Log.d("TAG", "getPlayerData: RAN SEC  ${ranSec}")
+                Log.d("TAG", "getPlayerData: repeat count  ${repeatCount}")
 
-            Log.d("TAG", "getPlayerData: Duration  ${duration}")
-            Log.d("TAG", "getPlayerData: SEC  ${sec}")
-            Log.d("TAG", "getPlayerData: RAN SEC  ${ranSec}")
-            Log.d("TAG", "getPlayerData: repeat count  ${repeatCount}")
-
-            repeat(repeatCount.toInt()){
-                if (!stopCounter) {
+                if (repeatCount <= 0) {
+                    stopCounter = true
+                    return@launch
+                }
+                stopCounter = false
+//                repeat(repeatCount.toInt()){
+//                    if (!stopCounter) {
+//                        delay(1000)
+//                        _musicState.value = _musicState.value.copy(
+//                            sliderState = _musicState.value.sliderState + 1000
+//                        )
+//                        Log.d("TAG", "getPlayerData: repeat count  ${_musicState.value.sliderState}")
+//                    } else {
+//                        this.cancel()
+//                    }
+//                }
+                trial++
+                for (i in 0 until repeatCount.toInt()) {
+                    if (stopCounter) {
+                        Log.d("TAG", "Counter stopped")
+                        break // Break the loop if stopCounter is true
+                    }
                     delay(1000)
                     _musicState.value = _musicState.value.copy(
                         sliderState = _musicState.value.sliderState + 1000
                     )
-                    Log.d("TAG", "getPlayerData: repeat count  ${_musicState.value.sliderState}")
-                } else {
-                    this.cancel()
+                    Log.d("TAG", "getPlayerData: repeat count  ${repeatCount.toInt()}")
+                    Log.d("TAG", "getPlayerData: current count  ${i}")
+                    Log.d("TAG", "getPlayerData: slider state $trial  ${_musicState.value.sliderState}")
                 }
+
+
             }
+
         }
     }
     private fun stopCounter(){

@@ -20,22 +20,7 @@ import kotlin.math.log
 
 class MainActivity : ComponentActivity() {
 
-
     val musicViewModel by viewModels<MusicViewModel>()
-    var selectedMusic : MusicFile? = null
-
-//    private val serviceConnection = object : ServiceConnection {
-//        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-//            val serv = service as MusicService.MusicBinder
-//            musicViewModel.setMusicService(serv.getService())
-//            musicViewModel.setIsBound(true)
-//        }
-//
-//        override fun onServiceDisconnected(name: ComponentName?) {
-//            musicViewModel.setIsBound(false)
-//        }
-//
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,16 +33,20 @@ class MainActivity : ComponentActivity() {
             }
 
             MyMusicTheme {
-                MusicListScreen(musicViewModel, selectedAudio = { playerState, musicFile ->
-                    val state = musicViewModel.getPlayerData(playerState,musicFile)
-                    sendBroadcast(Intent(Utils.PLAYER_STATE_CHANNEL).apply {
-                        putExtra("player", state)
-                    } )
-                }, onSliderChange = { value ->
-                    sendBroadcast(Intent(Utils.SLIDER_CHANNEL).apply {
-                        putExtra("slider_value", value)
+                MusicListScreen(
+                    musicViewModel,
+                    selectedAudio = { playerState, musicFile ->
+                        val state = musicViewModel.getPlayerData(playerState, musicFile)
+                        sendBroadcast(Intent(Utils.PLAYER_STATE_CHANNEL).apply {
+                            putExtra("player", state)
+                        })
+                    },
+                    onSliderChange = { value ->
+                        Log.d("TAG", "onCreate: Slider Change ${value}")
+                        sendBroadcast(Intent(Utils.SLIDER_CHANNEL).apply {
+                            putExtra("slider_value", value)
+                        })
                     })
-                })
             }
         }
         musicViewModel.setContentResolver(contentResolver)
@@ -65,17 +54,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-
         registerReceiver(musicViewModel.progressReceiver, IntentFilter(Utils.PROGRESS_CHANNEL))
-//        registerReceiver(musicViewModel.playerStateReceiver, IntentFilter(Utils.PLAYER_STATE_CHANNEL))
     }
 
     override fun onStop() {
         super.onStop()
         unregisterReceiver(musicViewModel.progressReceiver)
-//        unregisterReceiver(musicViewModel.playerStateReceiver)
     }
-
-
 }
 
