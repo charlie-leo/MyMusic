@@ -1,0 +1,49 @@
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="30dp"
+    android:height="30dp"
+    android:viewportHeight="30"
+    android:viewportWidth="30"
+    >
+<!--    Arrow-->
+<!--    <path-->
+<!--        android:pathData="M5,2L5,25 L20,10, L12,9 Z M25,5 L25,25 "-->
+<!--        android:strokeColor="@color/black"-->
+<!--        android:strokeLineJoin="round"-->
+<!--        android:strokeWidth="2"-->
+<!--        android:strokeLineCap="round"-->
+<!--        />-->
+<!--    Line-->
+<!--        <path-->
+<!--            android:pathData="M0,3 L30,3"-->
+<!--            android:strokeColor="@color/black"-->
+<!--            android:strokeLineJoin="round"-->
+<!--            android:strokeWidth="2"-->
+<!--            android:strokeLineCap="round"-->
+<!--            />-->
+<!--   Circle 0 -->
+    <path
+        android:pathData="M8,12  C8,3 20,3 20,12 M8,12  C8,21 20,21 20,12"
+        android:strokeColor="@color/black"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        />
+
+<!--    <path-->
+<!--        android:strokeColor="#000000"-->
+<!--        android:strokeLineJoin="round"-->
+<!--        android:strokeWidth="2"-->
+<!--        android:strokeLineCap="round"-->
+<!--        android:pathData="M3,5 L27,5 L16,23 Z" />-->
+
+
+<!--    <path-->
+<!--        android:pathData="M15,27 C 2,27 15,12 15,12 M15,27 C 28,27 15,12 15,12 M15,12  L9,10 L6,8 M15,12 L21,10 L24,8  "-->
+<!--        android:strokeColor="@color/black"-->
+<!--        android:strokeLineJoin="round"-->
+<!--        android:strokeWidth="2"-->
+<!--        android:strokeLineCap="round"-->
+<!--        />-->
+
+</vector>
